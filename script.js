@@ -1,37 +1,47 @@
-const header = document.getElementById("header");
+const header = document.querySelector(".header");
 const toggle = document.getElementById("menu-toggle");
-const nav = document.getElementById("nav");
+const nav = document.querySelector(".nav");
 
-window.addEventListener("scroll", () => {
-    header.classList.toggle("scrolled", window.scrollY > 50);
-});
-
-toggle.addEventListener("click", () =>{
+// Mobile menu toggle
+toggle.addEventListener("click", () => {
     nav.classList.toggle("active");
 });
 
-const cards = document.querySelectorAll(".card");
-
-window.addEventListener("scroll", () => {
-    cards.forEach(card => {
-        const cardTop = card.getBoundingClientRect().top;
-        if(cardTop < window.innerHeight - 50){
-            card.classList.add("show");
-        }
+// Cerrar el menú al hacer click en un enlace
+nav.querySelectorAll("a").forEach(link => {
+    link.addEventListener("click", () => {
+        nav.classList.remove("active");
     });
 });
 
-const productos = document.querySelectorAll(".producto-card");
+// Header scroll effect + card animations (single scroll handler)
+function handleScrollEffects() {
+    // Header shrink
+    header.classList.toggle("scrolled", window.scrollY > 50);
 
-window.addEventListener("scroll", () =>{
-    productos.forEach(card => {
+    // Animate beneficio cards
+    document.querySelectorAll(".card").forEach(card => {
         const top = card.getBoundingClientRect().top;
-        if (top<window.innerHeight-50) {
+        if (top < window.innerHeight - 50) {
             card.classList.add("show");
         }
     });
-});
 
+    // Animate producto cards
+    document.querySelectorAll(".producto-card").forEach(card => {
+        const top = card.getBoundingClientRect().top;
+        if (top < window.innerHeight - 50) {
+            card.classList.add("show");
+        }
+    });
+}
+
+window.addEventListener("scroll", handleScrollEffects);
+
+// Ejecutar al cargar por si hay elementos ya visibles
+handleScrollEffects();
+
+// Testimonios
 function agregarTestimonio() {
     const nombreInput = document.getElementById("nombre");
     const mensajeInput = document.getElementById("mensaje");
@@ -43,10 +53,15 @@ function agregarTestimonio() {
 
     if (nombre === "" || mensaje === "") return;
 
+    // Límite de caracteres para evitar spam
+    if (nombre.length > 50 || mensaje.length > 300) {
+        alert("El nombre no puede tener más de 50 caracteres y el mensaje más de 300.");
+        return;
+    }
+
     const contenedor = document.getElementById("testimonios-container");
     if (!contenedor) return;
 
-    // Crear elementos seguros
     const nuevo = document.createElement("div");
     nuevo.classList.add("testimonio");
 
@@ -61,11 +76,12 @@ function agregarTestimonio() {
 
     contenedor.appendChild(nuevo);
 
-    // limpiar inputs
+    // Limpiar inputs
     nombreInput.value = "";
     mensajeInput.value = "";
 }
 
+// Lightbox
 const images = document.querySelectorAll(".galeria-grid img");
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightbox-img");
@@ -75,9 +91,29 @@ images.forEach(img => {
     img.addEventListener("click", () => {
         lightbox.style.display = "flex";
         lightboxImg.src = img.src;
+        document.body.style.overflow = "hidden"; // Prevenir scroll del body
     });
 });
 
-closeBtn.addEventListener("click", () => {
-    lightbox.style.display = "none";
+if (closeBtn) {
+    closeBtn.addEventListener("click", closeLightbox);
+}
+
+// Cerrar al hacer click en el fondo oscuro
+lightbox.addEventListener("click", (e) => {
+    if (e.target === lightbox) {
+        closeLightbox();
+    }
 });
+
+// Cerrar con ESC
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && lightbox.style.display === "flex") {
+        closeLightbox();
+    }
+});
+
+function closeLightbox() {
+    lightbox.style.display = "none";
+    document.body.style.overflow = ""; // Restaurar scroll
+}
